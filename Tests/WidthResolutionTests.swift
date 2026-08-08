@@ -3,60 +3,23 @@ import Testing
 
 struct WidthResolutionTests {
 
-	@Test func customModeWithValidWidthWins() async throws {
-		let resolved = WidthResolution.resolvedWidth(mode: .custom, customWidth: 100, xcodeReformatWidth: 80)
-
-		#expect(resolved.width == 100)
-		#expect(resolved.provenance == .custom)
+	@Test func usableXcodeWidthPassesThrough() async throws {
+		#expect(WidthResolution.resolvedWidth(xcodeReformatWidth: 120) == 120)
+		#expect(WidthResolution.resolvedWidth(xcodeReformatWidth: 1) == 1)
 	}
 
-	@Test func customModeWithoutAWidthFallsThroughToXcode() async throws {
-		let resolved = WidthResolution.resolvedWidth(mode: .custom, customWidth: nil, xcodeReformatWidth: 80)
-
-		#expect(resolved.width == 80)
-		#expect(resolved.provenance == .xcodeSetting)
+	@Test func missingKeyFallsBackToTheDefault() async throws {
+		#expect(WidthResolution.resolvedWidth(xcodeReformatWidth: nil) == WidthResolution.fallbackWidth)
 	}
 
-	@Test func customModeWithAnInvalidWidthFallsThroughToXcode() async throws {
-		let resolved = WidthResolution.resolvedWidth(mode: .custom, customWidth: 0, xcodeReformatWidth: 80)
-
-		#expect(resolved.width == 80)
-		#expect(resolved.provenance == .xcodeSetting)
+	@Test func invalidStoredWidthFallsBackToTheDefault() async throws {
+		#expect(WidthResolution.resolvedWidth(xcodeReformatWidth: 0) == WidthResolution.fallbackWidth)
+		#expect(WidthResolution.resolvedWidth(xcodeReformatWidth: -40) == WidthResolution.fallbackWidth)
 	}
 
-	@Test func xcodeModeIgnoresTheCustomWidth() async throws {
-		let resolved = WidthResolution.resolvedWidth(mode: .xcodeSetting, customWidth: 100, xcodeReformatWidth: 80)
-
-		#expect(resolved.width == 80)
-		#expect(resolved.provenance == .xcodeSetting)
-	}
-
-	@Test func unreadableXcodeWidthFallsThroughToTheFallback() async throws {
-		let resolved = WidthResolution.resolvedWidth(mode: .xcodeSetting, customWidth: nil, xcodeReformatWidth: nil)
-
-		#expect(resolved.width == WidthResolution.fallbackWidth)
-		#expect(resolved.provenance == .fallback)
-	}
-
-	@Test func invalidXcodeWidthFallsThroughToTheFallback() async throws {
-		let resolved = WidthResolution.resolvedWidth(mode: .xcodeSetting, customWidth: nil, xcodeReformatWidth: 0)
-
-		#expect(resolved.width == WidthResolution.fallbackWidth)
-		#expect(resolved.provenance == .fallback)
-	}
-
-	@Test func everyCombinationResolvesToAPositiveWidth() async throws {
-		for mode in [WidthMode.xcodeSetting, WidthMode.custom] {
-			for customWidth in [nil, 0, 100] {
-				for xcodeWidth in [nil, 0, 80] {
-					let resolved = WidthResolution.resolvedWidth(
-						mode: mode,
-						customWidth: customWidth,
-						xcodeReformatWidth: xcodeWidth)
-
-					#expect(resolved.width >= 1)
-				}
-			}
+	@Test func resolvedWidthIsAlwaysPositive() async throws {
+		for storedWidth in [nil, -1, 0, 1, 80, 120] {
+			#expect(WidthResolution.resolvedWidth(xcodeReformatWidth: storedWidth) >= 1)
 		}
 	}
 

@@ -9,12 +9,12 @@ A macOS app hosting **SourceTools for Xcode**, an Xcode Source Editor Extension 
 - Words are never broken; an oversized word overflows on its own line.
 - An empty selection does nothing.
 
-The wrap column defaults to Xcode's **"Reformat code at column"** setting, read live; the SourceTools app's settings window can override it with a custom width and shows which source is in effect.
+The wrap column always follows Xcode's **"Reformat code at column"** setting, read live at each invocation; when that preference has never been written, the built-in default of 80 — the same column a pristine Xcode would use — applies.
 
 ## Enabling
 
-1. Build and launch `SourceTools.app` once.
-2. Enable **SourceTools for Xcode** under System Settings > General > Login Items & Extensions > Xcode Source Editor.
+1. Build and launch `SourceTools.app` once. Its window explains the steps and its button opens System Settings directly on the Xcode Source Editor extensions page.
+2. Enable **SourceTools for Xcode** there.
 3. Relaunch Xcode; the command appears in the Editor menu, and Xcode's Key Bindings can give it a shortcut.
 
 ## Building

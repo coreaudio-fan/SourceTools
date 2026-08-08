@@ -38,11 +38,9 @@ struct ReflowAPITests {
 				start: TextPosition(lineIndex: 0, columnIndex: 0),
 				end: TextPosition(lineIndex: 0, columnIndex: 0))),
 			requireSendable(LineReplacement(lineRange: 0...0, replacementLineCount: 1)),
-			requireSendable(WidthMode.xcodeSetting),
-			requireSendable(WidthProvenance.fallback),
 		]
 
-		#expect(sendables.count == 7)
+		#expect(sendables.count == 5)
 	}
 
 	@Test func clientCanReachEveryReflowOperation() async throws {
@@ -74,19 +72,12 @@ struct ReflowAPITests {
 		#expect(updated.count == 1)
 	}
 
-	@Test func clientCanResolveWidthsPurelyAndAtTheEdges() async throws {
-		let pure = WidthResolution.resolvedWidth(mode: .xcodeSetting, customWidth: nil, xcodeReformatWidth: nil)
-		let current = WidthResolver.currentResolution()
+	@Test func clientCanResolveWidthsPurelyAndAtTheEdge() async throws {
+		let fallbackResolved = WidthResolution.resolvedWidth(xcodeReformatWidth: nil)
 		let xcodeWidth = XcodeDefaults.reformatWidth()
 
-		#expect(pure.width == WidthResolution.fallbackWidth)
-		#expect(current.width >= 1)
+		#expect(fallbackResolved == WidthResolution.fallbackWidth)
 		#expect((xcodeWidth == nil) || (xcodeWidth ?? 0 >= 1))
-	}
-
-	@Test func clientCanReadTheSharedSettingsNames() async throws {
-		#expect(!(SharedSettings.suiteName.isEmpty))
-		#expect(SharedSettings.widthModeKey != SharedSettings.customWidthKey)
 	}
 
 }

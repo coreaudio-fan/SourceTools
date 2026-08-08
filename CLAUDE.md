@@ -29,7 +29,7 @@ Four targets. Target names are generic, matching the `Config/` filename stems an
 
 | Target | Product | Builds from | Notes |
 |---|---|---|---|
-| `App` | `SourceTools.app` | `App/` | SwiftUI settings window; embeds the framework and the appex |
+| `App` | `SourceTools.app` | `App/` | SwiftUI enablement window; embeds the framework and the appex |
 | `Extension` | `SourceTools for Xcode.appex` | `Extension/` | The source editor extension — the XcodeKit edge and nothing more |
 | `Framework` | `SourceToolsCore.framework` | `Framework/` | The pure reflow engine, plus two documented impure width readers |
 | `Tests` | `SourceTools Tests.xctest` | `Tests/` | swift-testing; links the framework library-style (no `TEST_HOST`) |
@@ -48,11 +48,16 @@ The engine is pure — lines in, lines out — and every editor-facing decision 
 
 The extension defaults its wrap column to Xcode's "Reformat code at column" setting (Settings > Editing). That field is backed by the undocumented defaults key **`DVTTextPageGuideLocation`** in `com.apple.dt.Xcode` — the historical page-guide key, so the reformat column and the page guide location are one setting in this Xcode version. Discovered 2026-08-08 on Xcode 26.6 (17F113) by changing the field and diffing `defaults read com.apple.dt.Xcode`, confirmed in both directions (93 on change, 120 on restore). Every earlier hunt for a key containing "reformat" was empty because the label and the storage key parted ways somewhere in Xcode's history.
 
-Reading another application's preference domain from these sandboxed processes requires the `com.apple.security.temporary-exception.shared-preference.read-only` entitlement, carried by **both** the app (for the settings window's diagnostic row) and the appex. It is a documented Apple mechanism appropriate for personal distribution; the Mac App Store rejects temporary-exception entitlements, so App Store distribution would require dropping the Xcode-tracking mode.
+Reading another application's preference domain from a sandboxed process requires the `com.apple.security.temporary-exception.shared-preference.read-only` entitlement, carried by the **appex only** — the app reads nothing from Xcode's domain. It is a documented Apple mechanism appropriate for personal distribution; the Mac App Store rejects temporary-exception entitlements, so App Store distribution would require dropping the Xcode-tracking behavior.
 
-Resolution chain (`WidthResolution.resolvedWidth`): the app's custom width when that mode is selected and valid → the Xcode key via `CFPreferencesCopyAppValue` → the hardcoded fallback 80, the user-reported value of a pristine field. The fallback could not be observed directly because the key on the development machine was overridden long ago; it only fires on machines where the key has never been written. Width mode and custom width are shared between app and appex through the `56N2U6EQZQ.coreaudio-fan.SourceTools` app group (`REGISTER_APP_GROUPS = YES` registers it under automatic signing).
+Resolution (`WidthResolution.resolvedWidth(xcodeReformatWidth:)`): the Xcode key via `CFPreferencesCopyAppValue` when it holds a usable column of at least 1, otherwise the hardcoded fallback 80 — the user-reported value of a pristine field. The fallback could not be observed directly because the key on the development machine was overridden long ago; it only fires on machines where the key has never been written. There is deliberately no user-configurable width: the first iteration had a settings window, width modes, and an app group to share them, all removed once the Xcode read was proven (2026-08-08).
 
 Indentation needs none of this: `XCSourceTextBuffer` hands the extension `tabWidth`, `indentationWidth`, and `usesTabsForIndentation` per invocation, and the reflow preserves each paragraph's existing leading whitespace verbatim, so only `tabWidth` (for measuring) is consumed.
+
+### The System Settings button
+
+The enablement window's button opens System Settings via the undocumented `x-apple.systempreferences:` URL scheme. `App/EnablementView.swift` walks an ordered candidate list and stops at the first URL the system accepts, so a future pane rename degrades to a nearby page rather than a dead button. Observed on macOS 26.6.1 (2026-08-08): the most specific candidate,
+`x-apple.systempreferences:com.apple.ExtensionsPreferences?extensionPointIdentifier=com.apple.dt.Xcode.extension.source-editor`, lands directly on the Xcode Source Editor extensions page.
 
 ### Languages
 
@@ -75,11 +80,11 @@ All build settings live in `.xcconfig` files; every `buildSettings` dict in `pro
 | File | Scope |
 |---|---|
 | `Project-{Common,Debug,Release}.xcconfig` | Byte-identical copies of Utilities' — language standards, warning and analyzer allowlists, Swift language mode and concurrency, signing, and the optimization/testability split |
-| `App-*.xcconfig` | App target: platform, packaging, runpath, entitlements, hardened runtime, app groups, `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` |
+| `App-*.xcconfig` | App target: platform, packaging, runpath, entitlements, hardened runtime, `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` |
 | `Extension-*.xcconfig` | Appex target: platform, packaging (`INFOPLIST_FILE` merge), XcodeKit search path, runpaths, entitlements |
 | `Framework-*.xcconfig` | Framework target: platform, packaging, dylib identity, module verifier, `APPLICATION_EXTENSION_API_ONLY` |
 | `Tests-*.xcconfig` | Test bundle: platform and packaging; no `TEST_HOST`, no `BUNDLE_LOADER` |
-| `App.entitlements` / `Extension.entitlements` | Sandbox, the team-prefixed app group, and the read-only preference exception for `com.apple.dt.Xcode` |
+| `App.entitlements` / `Extension.entitlements` | App: sandbox only. Extension: sandbox plus the read-only preference exception for `com.apple.dt.Xcode` |
 | `Extension-Info.plist` | The `NSExtension` dict only (principal class, one command definition); merged into the generated Info.plist |
 
 Deliberate divergences from the Utilities baseline, each on purpose:

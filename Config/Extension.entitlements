@@ -4,14 +4,10 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
-	<key>com.apple.security.application-groups</key>
-	<array>
-		<string>$(TeamIdentifierPrefix)coreaudio-fan.SourceTools</string>
-	</array>
 	<!--
-		Read-only access to Xcode's preferences so the extension can default its wrap column to
-		Xcode's "Reformat code at column" setting. A documented Apple mechanism for personal
-		distribution; the Mac App Store would reject temporary-exception entitlements.
+		Read-only access to Xcode's preferences so the extension can wrap at Xcode's "Reformat code at
+		column" setting. A documented Apple mechanism for personal distribution; the Mac App Store would
+		reject temporary-exception entitlements.
 	-->
 	<key>com.apple.security.temporary-exception.shared-preference.read-only</key>
 	<array>

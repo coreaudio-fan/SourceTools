@@ -4,18 +4,5 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
-	<key>com.apple.security.application-groups</key>
-	<array>
-		<string>$(TeamIdentifierPrefix)coreaudio-fan.SourceTools</string>
-	</array>
-	<!--
-		Read-only access to Xcode's preferences so the settings window's diagnostic row can show
-		the width the extension will actually resolve. A documented Apple mechanism for personal
-		distribution; the Mac App Store would reject temporary-exception entitlements.
-	-->
-	<key>com.apple.security.temporary-exception.shared-preference.read-only</key>
-	<array>
-		<string>com.apple.dt.Xcode</string>
-	</array>
 </dict>
 </plist>
