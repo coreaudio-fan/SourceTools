@@ -21,7 +21,7 @@ nonisolated final class ReflowSelectionCommand: NSObject, XCSourceEditorCommand 
 		//	buffer and the selections untouched, per the requirement that no selection processes no lines.
 		if !lineRanges.isEmpty {
 			let parameters = ReflowParameters(
-				limitWidth: WidthResolver.currentResolution().width,
+				limitWidth: WidthResolution.resolvedWidth(xcodeReformatWidth: XcodeDefaults.reformatWidth()),
 				tabWidth: buffer.tabWidth)
 			let replacements = lineRanges.map { lineRange in
 				replacedLines(in: lineRange, of: buffer, parameters: parameters)

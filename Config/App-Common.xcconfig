@@ -25,7 +25,6 @@ PRODUCT_NAME = SourceTools
 //	Signing
 CODE_SIGN_ENTITLEMENTS = Config/App.entitlements
 ENABLE_HARDENED_RUNTIME = YES
-REGISTER_APP_GROUPS = YES
 
 //	Documentation Compiler - Options
 //	Documentation compilation is enforced on the Framework's published API; this target publishes none,
