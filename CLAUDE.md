@@ -42,6 +42,8 @@ The engine is pure — lines in, lines out — and every editor-facing decision 
 
 `XcodeKit.framework` lives at `$(DEVELOPER_DIR)/Library/Frameworks`, **not** in the macOS SDK. The `com.apple.product-type.xcode-extension` product type injects the linker search path, the `_XCExtensionMain` entry point, and the `-lXcodeExtension` glue by itself; the Swift *compile* step is the one consumer that needs the explicit `FRAMEWORK_SEARCH_PATHS = $(DEVELOPER_FRAMEWORKS_DIR)` in `Extension-Common.xcconfig`.
 
+**XcodeKit must additionally be embedded in the appex** (`Contents/Frameworks`, via the Extension target's Embed Frameworks phase with code-sign-on-copy). Nothing supplies it at runtime: XcodeKit's install name is `@rpath/…`, the appex's runpaths are all bundle-relative, and Xcode injects no search path when launching the extension — without the embedded copy the appex dies before `main` with "Library not loaded: @rpath/XcodeKit.framework" (crash report 2026-08-08, `termination.namespace = DYLD`). This is how shipping extensions work: the App Store-distributed Comment Wrapper.appex carries its own `XcodeKit.framework` copy, observed 2026-08-08.
+
 ### The wrap column and Xcode's defaults key
 
 The extension defaults its wrap column to Xcode's "Reformat code at column" setting (Settings > Editing). That field is backed by the undocumented defaults key **`DVTTextPageGuideLocation`** in `com.apple.dt.Xcode` — the historical page-guide key, so the reformat column and the page guide location are one setting in this Xcode version. Discovered 2026-08-08 on Xcode 26.6 (17F113) by changing the field and diffing `defaults read com.apple.dt.Xcode`, confirmed in both directions (93 on change, 120 on restore). Every earlier hunt for a key containing "reformat" was empty because the label and the storage key parted ways somewhere in Xcode's history.
@@ -86,7 +88,7 @@ Deliberate divergences from the Utilities baseline, each on purpose:
 - No `BUILD_LIBRARY_FOR_DISTRIBUTION` on the framework. Utilities keeps it because other repos consume it as a subproject; SourceToolsCore has exactly one consumer in this repo, and library evolution would cost build time for nothing.
 - `APPLICATION_EXTENSION_API_ONLY = YES` on the framework, because the appex links it and the xcode-extension product type requires extension-safe API.
 - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` in `App-Common.xcconfig` only, mirroring Apple's app template; the project baseline stays `nonisolated` because `XCSourceEditorCommand.perform` arrives on an arbitrary thread and the engine must not be actor-bound.
-- `ENABLE_HARDENED_RUNTIME = YES` on the App **only**. The appex must not enable hardened runtime: Xcode supplies XcodeKit to extension processes through DYLD environment injection, which hardened runtime strips, and the appex then dies before `main` ("Library not loaded: @rpath/XcodeKit.framework", crash report 2026-08-08, `termination.namespace = DYLD`). Apple's own extension template likewise omits hardened runtime on the appex; the App Sandbox is the mandatory protection and stays.
+- `ENABLE_HARDENED_RUNTIME = YES` on both the App and the Extension. During bring-up, hardened runtime was briefly misdiagnosed as the cause of the appex's launch crash; the real cause was the missing embedded XcodeKit (see Embedding and runpaths above), and the working App Store specimen Comment Wrapper runs its appex hardened, so hardened runtime stays.
 
 ## Testing
 
@@ -106,6 +108,6 @@ Hard-won findings from 2026-08-08, in the order to check them:
 
 - `pluginkit -m -v -i coreaudio-fan.SourceTools.Extension` shows the election state: `+` in use, `-` ignored, `!` **debugger use only**, `=` superseded (legend: `man pluginkit`). Running the Extension scheme leaves a `!` debugger election behind that masks normal use; reset it with `pluginkit -e use -i coreaudio-fan.SourceTools.Extension`.
 - Install the app in `/Applications`, not DerivedData; replacing the bundle invalidates the System Settings approval, which must be re-toggled.
-- A crash report named `SourceTools for Xcode-*.ips` in `~/Library/Logs/DiagnosticReports` with `DYLD, Library missing` means hardened runtime crept back onto the appex (see the divergences above).
+- A crash report named `SourceTools for Xcode-*.ips` in `~/Library/Logs/DiagnosticReports` with `DYLD, Library missing` means the appex lost its embedded `XcodeKit.framework` (see Embedding and runpaths above) — check the Extension target's Embed Frameworks phase.
 - The extension submenu materializes at the bottom of the Editor menu only while a source editor has focus.
-- As of 2026-08-08 on this machine (Xcode 26.6, macOS 26.6.1), extension discovery was wedged system-wide: even a stock template extension run through the Extension-scheme debug flow showed no menu, with the appex process never spawned and nothing in the unified log, SIP normal, and no configuration profiles. That state is machine-level, not a project defect; a reboot is the standard cure for stale PlugInKit/ExtensionKit state.
+- A launch crash also poisons later attempts: the failed extension may not be relaunched until its registration is replaced or the machine restarts, so after fixing a crash, reinstall, re-register, and reset the election before judging the fix.

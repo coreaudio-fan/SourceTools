@@ -14,6 +14,7 @@
 		AA0000000000000000000044 /* SourceToolsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* SourceToolsCore.framework */; };
 		AA0000000000000000000045 /* SourceToolsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* SourceToolsCore.framework */; };
 		AA0000000000000000000046 /* Documentation.docc in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000C /* Documentation.docc */; };
+		AA0000000000000000000047 /* XcodeKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000008 /* XcodeKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +56,17 @@
 			dstSubfolderSpec = 10;
 			files = (
 				AA0000000000000000000041 /* SourceToolsCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000000000000000000003F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				AA0000000000000000000047 /* XcodeKit.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -222,6 +234,7 @@
 				AA0000000000000000000035 /* Sources */,
 				AA0000000000000000000036 /* Frameworks */,
 				AA0000000000000000000037 /* Resources */,
+				AA000000000000000000003F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
