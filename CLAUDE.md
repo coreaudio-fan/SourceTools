@@ -86,6 +86,7 @@ Deliberate divergences from the Utilities baseline, each on purpose:
 - No `BUILD_LIBRARY_FOR_DISTRIBUTION` on the framework. Utilities keeps it because other repos consume it as a subproject; SourceToolsCore has exactly one consumer in this repo, and library evolution would cost build time for nothing.
 - `APPLICATION_EXTENSION_API_ONLY = YES` on the framework, because the appex links it and the xcode-extension product type requires extension-safe API.
 - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` in `App-Common.xcconfig` only, mirroring Apple's app template; the project baseline stays `nonisolated` because `XCSourceEditorCommand.perform` arrives on an arbitrary thread and the engine must not be actor-bound.
+- `ENABLE_HARDENED_RUNTIME = YES` on the App **only**. The appex must not enable hardened runtime: Xcode supplies XcodeKit to extension processes through DYLD environment injection, which hardened runtime strips, and the appex then dies before `main` ("Library not loaded: @rpath/XcodeKit.framework", crash report 2026-08-08, `termination.namespace = DYLD`). Apple's own extension template likewise omits hardened runtime on the appex; the App Sandbox is the mandatory protection and stays.
 
 ## Testing
 
@@ -98,3 +99,13 @@ The suite uses **swift-testing** — `import Testing`, `struct` suites, `@Test` 
 3. Relaunch Xcode. The command appears at **Editor > SourceTools for Xcode > Reflow Selection**; Xcode's Key Bindings can give it a shortcut.
 
 An empty selection (caret only) is a no-op by design. To debug the appex, run the `App` scheme, then Debug > Attach to Process once Xcode's extension host spawns it — or add a per-user scheme for the Extension target that asks which app to launch; none is shared on purpose.
+
+### Troubleshooting a missing Editor-menu entry
+
+Hard-won findings from 2026-08-08, in the order to check them:
+
+- `pluginkit -m -v -i coreaudio-fan.SourceTools.Extension` shows the election state: `+` in use, `-` ignored, `!` **debugger use only**, `=` superseded (legend: `man pluginkit`). Running the Extension scheme leaves a `!` debugger election behind that masks normal use; reset it with `pluginkit -e use -i coreaudio-fan.SourceTools.Extension`.
+- Install the app in `/Applications`, not DerivedData; replacing the bundle invalidates the System Settings approval, which must be re-toggled.
+- A crash report named `SourceTools for Xcode-*.ips` in `~/Library/Logs/DiagnosticReports` with `DYLD, Library missing` means hardened runtime crept back onto the appex (see the divergences above).
+- The extension submenu materializes at the bottom of the Editor menu only while a source editor has focus.
+- As of 2026-08-08 on this machine (Xcode 26.6, macOS 26.6.1), extension discovery was wedged system-wide: even a stock template extension run through the Extension-scheme debug flow showed no menu, with the appex process never spawned and nothing in the unified log, SIP normal, and no configuration profiles. That state is machine-level, not a project defect; a reboot is the standard cure for stale PlugInKit/ExtensionKit state.
