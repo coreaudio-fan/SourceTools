@@ -39,3 +39,8 @@ FRAMEWORK_SEARCH_PATHS = $(inherited) $(DEVELOPER_FRAMEWORKS_DIR)
 CODE_SIGN_ENTITLEMENTS = Config/Extension.entitlements
 ENABLE_HARDENED_RUNTIME = YES
 REGISTER_APP_GROUPS = YES
+
+//	Documentation Compiler - Options
+//	Documentation compilation is enforced on the Framework's published API; this target publishes none,
+//	and docc fails outright here ("No valid content was found in this file") with no catalog present.
+RUN_DOCUMENTATION_COMPILER = NO
