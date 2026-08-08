@@ -1,0 +1,15 @@
+//	Architectures
+SDKROOT = macosx
+SUPPORTED_PLATFORMS = macosx
+
+//	Deployment
+MACOSX_DEPLOYMENT_TARGET = 26.0
+
+//	Localization
+STRING_CATALOG_GENERATE_SYMBOLS = NO
+SWIFT_EMIT_LOC_STRINGS = NO
+
+//	Packaging
+GENERATE_INFOPLIST_FILE = YES
+PRODUCT_BUNDLE_IDENTIFIER = coreaudio-fan.SourceTools.Tests
+PRODUCT_NAME = SourceTools Tests

@@ -1,0 +1,33 @@
+//	Architectures
+SDKROOT = macosx
+SUPPORTED_PLATFORMS = macosx
+
+//	Deployment
+COMBINE_HIDPI_IMAGES = YES
+MACOSX_DEPLOYMENT_TARGET = 26.0
+
+//	Info.plist Values
+INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.developer-tools
+INFOPLIST_KEY_NSHumanReadableCopyright = ©2026 by coreaudio-fan
+
+//	Linking - General
+LD_RUNPATH_SEARCH_PATHS = @executable_path/../Frameworks
+
+//	Localization
+STRING_CATALOG_GENERATE_SYMBOLS = YES
+SWIFT_EMIT_LOC_STRINGS = YES
+
+//	Packaging
+GENERATE_INFOPLIST_FILE = YES
+PRODUCT_BUNDLE_IDENTIFIER = coreaudio-fan.SourceTools
+PRODUCT_NAME = SourceTools
+
+//	Signing
+CODE_SIGN_ENTITLEMENTS = Config/App.entitlements
+ENABLE_HARDENED_RUNTIME = YES
+REGISTER_APP_GROUPS = YES
+
+//	Swift Compiler - Concurrency
+//	The app target alone defaults to MainActor isolation, mirroring Apple's app template; the
+//	project-wide baseline in Project-Common.xcconfig stays nonisolated for the other targets.
+SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor
