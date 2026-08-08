@@ -17,21 +17,24 @@ struct EnablementView: View {
 	]
 
 	var body: some View {
-		VStack(alignment: .leading, spacing: 12) {
+		VStack(alignment: .leading, spacing: 16) {
 			Text("Enable the Xcode extension")
 				.font(.title2)
 				.bold()
+			//	Multiline text in a content-sized window keeps its single-line ideal width unless told to
+			//	trade width for height, so each wrapping line carries fixedSize(horizontal:vertical:).
 			Text("1. Open System Settings > General > Login Items & Extensions > Xcode Source Editor and enable SourceTools for Xcode.")
+				.fixedSize(horizontal: false, vertical: true)
 			Text("2. Relaunch Xcode. The command appears under Editor > SourceTools for Xcode > Reflow Selection, where Xcode's Key Bindings can give it a shortcut.")
+				.fixedSize(horizontal: false, vertical: true)
 			Text("The wrap column always follows Xcode's \"Reformat code at column\" setting.")
 				.foregroundStyle(.secondary)
-			HStack {
-				Spacer()
-				Button("Open System Settings…") {
-					Self.openSystemSettings()
-				}
-				.keyboardShortcut(.defaultAction)
+				.fixedSize(horizontal: false, vertical: true)
+			Button("Open System Settings…") {
+				Self.openSystemSettings()
 			}
+			.keyboardShortcut(.defaultAction)
+			.frame(maxWidth: .infinity, alignment: .center)
 		}
 		.padding(20)
 		.frame(width: 480)
