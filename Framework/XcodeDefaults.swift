@@ -15,10 +15,12 @@ public enum XcodeDefaults {
 
 	///	The defaults key backing Xcode's "Reformat code at column" setting.
 	///
-	///	The key is undocumented and was absent from the domain until the setting was first changed by hand, so
-	///	this name is provisional until the defaults-diff discovery experiment recorded in CLAUDE.md confirms it.
-	///	A wrong name is safe: the read returns nil and resolution uses the fallback width.
-	private static let reformatWidthKey = "DVTTextReformatWidth"
+	///	The key is undocumented; its name was discovered by changing the setting in Xcode 26.6's Settings UI
+	///	and diffing `defaults read com.apple.dt.Xcode` (2026-08-08, recorded in CLAUDE.md). The field writes
+	///	to the historical page-guide key, so the reformat column and the page guide location are one setting
+	///	in this Xcode version. Should a future Xcode rename it, the read returns nil and resolution uses the
+	///	fallback width.
+	private static let reformatWidthKey = "DVTTextPageGuideLocation"
 
 	///	Xcode's "Reformat code at column" value, or nil when the preference is absent or unreadable.
 	public static func reformatWidth() -> Int? {

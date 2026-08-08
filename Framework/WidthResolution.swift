@@ -29,9 +29,10 @@ public enum WidthResolution {
 	///	The wrap column used when the custom width does not apply and Xcode's setting cannot be read.
 	///
 	///	Intended to be the default value Xcode's "Reformat code at column" field displays, so the resolved width
-	///	matches what Xcode itself would reformat at even when the preference was never persisted. Provisionally
-	///	120 pending the defaults-key discovery experiment recorded in CLAUDE.md.
-	public static let fallbackWidth = 120
+	///	matches what Xcode itself would reformat at even where the preference was never persisted. 80 is the
+	///	user-reported pristine default; it could not be observed directly because the key on the development
+	///	machine was overridden long ago, and the fallback only fires where the key has never been written.
+	public static let fallbackWidth = 80
 
 	///	Resolves the wrap column and reports where it came from.
 	///
