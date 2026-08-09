@@ -5,6 +5,7 @@ A macOS app hosting **SourceTools for Xcode**, an Xcode Source Editor Extension 
 **Editor > SourceTools for Xcode > Reflow Selection** joins the selected lines into paragraphs (blank lines separate them) and re-wraps the words at the wrap column:
 
 - Indentation is preserved verbatim — tabs stay tabs, measured at the buffer's tab width.
+- Tab-aligned interior structure survives: a line whose text carries alignment tabs (like a DocC `- name:<tab>description` item) never merges with its neighbors, wraps hanging at its own value column, and re-absorbs its overflow lines on the next reflow.
 - Comment leaders (`///`, `//`, `#`, `--`, `;`, `*`) are recognized and re-applied to every wrapped line, keeping the leader's own spacing.
 - Words are never broken; an oversized word overflows on its own line.
 - An empty selection does nothing.
