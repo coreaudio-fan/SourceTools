@@ -18,19 +18,23 @@ public struct ReflowParameters: Sendable, Equatable {
 ///	Pure text-reflow operations: lines in, lines out, no I/O and no editor dependencies.
 public enum Reflow {
 
-	///	Reflows the given terminator-free lines at the limit width.
+	///	Reflows the given terminator-free lines at the limit width, preserving tab-expressed structure.
 	///
-	///	Consecutive non-blank lines form a paragraph: their words are joined into one stream and greedily re-wrapped,
-	///	and every output line carries the paragraph's first-line indentation verbatim plus the paragraph's common
-	///	comment leader. Blank lines and leader-only lines pass through verbatim and separate the paragraphs. A
+	///	Blank lines and leader-only lines pass through verbatim and separate the paragraphs. Within a paragraph,
+	///	lines group into independently wrapped units read entirely from tabs: consecutive lines sharing a
+	///	text-start column form a prose unit whose words join into one stream and greedily re-wrap under the first
+	///	line's verbatim prefix, while a line containing an interior tab is columnated — everything through its last
+	///	interior tab is kept verbatim as its head, and only the text after it flows, with continuation lines padded
+	///	back out to the head's end column. A plain line starting exactly at that hanging column is overflow from a
+	///	previous wrap and is absorbed into its unit before re-wrapping, so editing wrapped text round-trips. A
 	///	paragraph whose lines disagree about their comment leader is passed through unchanged, because reflowing it
 	///	would fold marker characters into the text.
 	public static func reflowedLines(of lines: [String], parameters: ReflowParameters) -> [String] {
 		let runs = lineRuns(of: lines.map { analyzedLine(of: $0) })
 		return runs.flatMap { run in
 			switch run {
-			case .separators(let separatorLines): separatorLines.map { $0.original }
-			case .paragraph(let paragraphLines): reflowedParagraph(of: paragraphLines, parameters: parameters)
+				case .separators(let separatorLines): separatorLines.map { $0.original }
+				case .paragraph(let paragraphLines): reflowedParagraph(of: paragraphLines, parameters: parameters)
 			}
 		}
 	}
